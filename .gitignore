@@ -1,0 +1,10 @@
+# Goのビルドファイル
+bin/
+*.exe
+*.out
+*.log
+
+# Firebase & AWSの秘密情報をコミットしない
+firebase.json
+.firebaserc
+.env
