@@ -13,9 +13,8 @@ firebase.json
 lambda/bootstrap
 lambda/function.zip
 
-# awsの設定ファイル
-.aws/
-
-
 # AWS CLI 実行結果
 lambda/response.json
+
+# awsの設定ファイル
+.aws/
