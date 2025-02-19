@@ -18,3 +18,7 @@ lambda/response.json
 
 # awsの設定ファイル
 .aws/
+
+# 機密情報
+lambda/serviceAccountKey.json
+lambda/serviceAccountKey.json:Zone.Identifier
