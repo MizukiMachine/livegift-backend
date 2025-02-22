@@ -23,6 +23,7 @@ func createFirestoreClient(ctx context.Context) (*firestore.Client, error) {
 
 // Firestore にデータを追加する Lambda ハンドラー
 func addDataToFirestore(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	// Firestore クライアントを作成
 	client, err := createFirestoreClient(ctx)
 	if err != nil {
 		log.Printf("Firestore クライアントエラー: %v", err)
@@ -30,6 +31,7 @@ func addDataToFirestore(ctx context.Context, request events.APIGatewayV2HTTPRequ
 	}
 	defer client.Close()
 
+	// Firestore の messages コレクションにデータを追加
 	_, _, err = client.Collection("messages").Add(ctx, map[string]interface{}{
 		"message": "Hello from AWS Lambda & Firestore!",
 	})
