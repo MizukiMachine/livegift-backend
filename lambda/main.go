@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -21,9 +22,8 @@ func createFirestoreClient(ctx context.Context) (*firestore.Client, error) {
 	return client, nil
 }
 
-// Firestore にデータを追加する Lambda ハンドラー
-func addDataToFirestore(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
-	// Firestore クライアントを作成
+// Firestore からデータを取得する Lambda ハンドラー
+func getMessagesFromFirestore(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	client, err := createFirestoreClient(ctx)
 	if err != nil {
 		log.Printf("Firestore クライアントエラー: %v", err)
@@ -31,16 +31,30 @@ func addDataToFirestore(ctx context.Context, request events.APIGatewayV2HTTPRequ
 	}
 	defer client.Close()
 
-	// Firestore の messages コレクションにデータを追加
-	_, _, err = client.Collection("messages").Add(ctx, map[string]interface{}{
-		"message": "Hello from AWS Lambda & Firestore!",
-	})
-	if err != nil {
-		log.Printf("Firestore 書き込みエラー: %v", err)
-		return events.APIGatewayV2HTTPResponse{StatusCode: 500, Body: "Failed to add data"}, nil
+	// Firestore の "messages" コレクションからデータを取得
+	iter := client.Collection("messages").Documents(ctx)
+	var messages []map[string]interface{}
+
+	for {
+		doc, err := iter.Next()
+		if err != nil {
+			break
+		}
+		messages = append(messages, doc.Data())
 	}
 
-	return events.APIGatewayV2HTTPResponse{StatusCode: 200, Body: "Data added to Firestore"}, nil
+	// JSON に変換
+	jsonData, err := json.Marshal(messages)
+	if err != nil {
+		log.Printf("JSON 変換エラー: %v", err)
+		return events.APIGatewayV2HTTPResponse{StatusCode: 500, Body: "Failed to parse data"}, nil
+	}
+
+	return events.APIGatewayV2HTTPResponse{
+		StatusCode: 200,
+		Body:       string(jsonData),
+		Headers:    map[string]string{"Content-Type": "application/json"},
+	}, nil
 }
 
 func main() {
