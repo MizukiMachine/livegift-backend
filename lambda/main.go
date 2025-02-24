@@ -15,7 +15,7 @@ import (
 // Firestore クライアントを作成
 func createFirestoreClient(ctx context.Context) (*firestore.Client, error) {
 	sa := option.WithCredentialsFile("serviceAccountKey.json")
-	client, err := firestore.NewClient(ctx, "YOUR_FIREBASE_PROJECT_ID", sa)
+	client, err := firestore.NewClient(ctx, "livegift-37bc2", sa)
 	if err != nil {
 		return nil, fmt.Errorf("Firestore クライアントの作成に失敗: %v", err)
 	}
@@ -58,5 +58,5 @@ func getMessagesFromFirestore(ctx context.Context, request events.APIGatewayV2HT
 }
 
 func main() {
-	lambda.Start(addDataToFirestore)
+	lambda.Start(getMessagesFromFirestore)
 }
