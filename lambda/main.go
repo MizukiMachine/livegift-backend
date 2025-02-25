@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"cloud.google.com/go/firestore"
 	"github.com/aws/aws-lambda-go/events"
@@ -54,6 +55,39 @@ func getMessagesFromFirestore(ctx context.Context, request events.APIGatewayV2HT
 		StatusCode: 200,
 		Body:       string(jsonData),
 		Headers:    map[string]string{"Content-Type": "application/json"},
+	}, nil
+}
+
+func addMessageToFirestore(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	client, err := createFirestoreClient(ctx)
+	if err != nil {
+		log.Printf("Firestore クライアントエラー：%v", err)
+		return events.APIGatewayV2HTTPResponse{StatusCode: 500, Body: "Internal Server Error"}, nil
+	}
+	defer client.Close()
+
+	// リクエストのJSONをパース
+	var requestBody struct {
+		Message string `json: "message"`
+	}
+	err = json.Unmarshal([]byte(request.Body), &requestBody)
+	if err != nil {
+		log.Printf("JSON パースエラー： %v", err)
+		return events.APIGatewayV2HTTPResponse{StatusCode: 400, Body: "Invalid JSON"}, nil
+	}
+
+	// Firestoreにデータを追加
+	_, _, err = client.Collection("messages").Add(ctx, map[string]interface{}{
+		"message":   requestBody.Message,
+		"createdAt": time.Now(),
+	})
+	if err != nil {
+		log.Printf("Firestore 書き込みエラー： %v", err)
+		return events.APIGatewayV2HTTPResponse{StatusCode: 500, Body: "Failed to save message"}, nil
+	}
+	return events.APIGatewayV2HTTPResponse{
+		StatusCode: 201,
+		Body:       "Message added successfully",
 	}, nil
 }
 
