@@ -92,5 +92,14 @@ func addMessageToFirestore(ctx context.Context, request events.APIGatewayV2HTTPR
 }
 
 func main() {
-	lambda.Start(getMessagesFromFirestore)
+	lambda.Start(func(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+		switch request.RequestContext.HTTP.Method {
+		case "GET":
+			return getMessagesFromFirestore(ctx, request)
+		case "POST":
+			return addMessageToFirestore(ctx, request)
+		default:
+			return events.APIGatewayV2HTTPResponse{StatusCode: 405, Body: "Method Not Allowed"}, nil
+		}
+	})
 }
