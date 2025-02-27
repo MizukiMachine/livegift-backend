@@ -58,6 +58,17 @@ func getMessagesFromFirestore(ctx context.Context, request events.APIGatewayV2HT
 	}, nil
 }
 
+/*
+addMessageToFirestore は新しいメッセージをFirestoreに追加するLambdaハンドラー
+リクエストボディからメッセージを取得し、タイムスタンプとともに保存
+	パラメータ:
+	  - ctx: リクエストのコンテキスト
+	  - request: メッセージデータを含むAPI GatewayからのHTTPリクエスト
+	戻り値:
+	  - events.APIGatewayV2HTTPResponse: APIレスポンス
+	  - error: 処理中のエラー
+*/
+
 func addMessageToFirestore(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	client, err := createFirestoreClient(ctx)
 	if err != nil {
@@ -90,6 +101,11 @@ func addMessageToFirestore(ctx context.Context, request events.APIGatewayV2HTTPR
 		Body:       "Message added successfully",
 	}, nil
 }
+
+/*
+*		main関数はLambda関数のエントリーポイント
+*		HTTPメソッドに応じて適切なハンドラー関数を呼び出す
+ */
 
 func main() {
 	lambda.Start(func(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
